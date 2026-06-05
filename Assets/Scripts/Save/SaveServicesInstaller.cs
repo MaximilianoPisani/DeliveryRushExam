@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using DeliveryRushExam.UGS;
 using UnityEngine;
 
 namespace DeliveryRushExam.Save
@@ -11,18 +13,30 @@ namespace DeliveryRushExam.Save
         }
 
         [SerializeField] private SaveMode saveMode = SaveMode.Local;
+        [SerializeField] private UgsInitializer ugsInitializer;
 
-        private void Awake()
+        private async void Awake()
         {
+            if (ugsInitializer == null)
+                ugsInitializer = FindFirstObjectByType<UgsInitializer>();
+
             if (saveMode == SaveMode.Cloud &&
                 Application.internetReachability != NetworkReachability.NotReachable)
             {
-                ServiceLocator.Register<ISaveService>(new UgsCloudSaveService());
-                Debug.Log("[SaveServicesInstaller] Registered UgsCloudSaveService");
-                return;
+                // Initialize UGS first, then register cloud service
+                await ugsInitializer.InitializeAsync();
+
+                if (ugsInitializer.IsReady)
+                {
+                    ServiceLocator.Register<ISaveService>(new UgsCloudSaveService());
+                    Debug.Log("[SaveServicesInstaller] Registered UgsCloudSaveService");
+                    return;
+                }
+
+                // UGS failed - fallback to local
+                Debug.LogWarning("[SaveServicesInstaller] UGS failed, falling back to LocalSaveService");
             }
 
-            // Fallback to local if no internet or mode is Local
             ServiceLocator.Register<ISaveService>(new LocalSaveService());
             Debug.Log("[SaveServicesInstaller] Registered LocalSaveService");
         }

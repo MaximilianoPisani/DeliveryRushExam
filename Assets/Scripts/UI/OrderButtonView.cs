@@ -22,14 +22,20 @@ namespace DeliveryRushExam.UI
             onCompleteClicked = completeCallback;
 
             if (completeButton == null)
-            {
                 completeButton = GetComponent<Button>();
-            }
 
             completeButton.onClick.RemoveAllListeners();
             completeButton.onClick.AddListener(HandleClick);
 
             Refresh();
+        }
+
+        private void Update()
+        {
+            if (orderData == null) return;
+
+            // Only update timer text - title and reward never change
+            timerText.text = $"Time {Mathf.CeilToInt(orderData.remainingTime)}";
         }
 
         public void Refresh()
@@ -44,9 +50,7 @@ namespace DeliveryRushExam.UI
         private void HandleClick()
         {
             if (orderData != null)
-            {
                 onCompleteClicked?.Invoke(orderData.id);
-            }
         }
     }
 }

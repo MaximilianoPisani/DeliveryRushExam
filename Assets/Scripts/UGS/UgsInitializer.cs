@@ -11,38 +11,31 @@ namespace DeliveryRushExam.UGS
 {
     public class UgsInitializer : MonoBehaviour
     {
-        [SerializeField] private bool initializeOnStart = true;
         [SerializeField] private bool verboseLogs = true;
 
         public bool IsReady { get; private set; }
 
-        private async void Start()
-        {
-            if (initializeOnStart)
-                await InitializeAsync();
-        }
-
         public async Task InitializeAsync()
         {
 #if DELIVERY_RUSH_UGS
-    try
-    {
-        if (UnityServices.State == ServicesInitializationState.Uninitialized)
-            await UnityServices.InitializeAsync();
+            try
+            {
+                if (UnityServices.State == ServicesInitializationState.Uninitialized)
+                    await UnityServices.InitializeAsync();
 
-        if (!AuthenticationService.Instance.IsSignedIn)
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                if (!AuthenticationService.Instance.IsSignedIn)
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-        IsReady = true;
+                IsReady = true;
 
-        if (verboseLogs)
-            Debug.Log($"[UgsInitializer] UGS ready - PlayerId: {AuthenticationService.Instance.PlayerId}");
-    }
-    catch (Exception e)
-    {
-        IsReady = false;
-        Debug.LogError($"[UgsInitializer] Failed to initialize UGS: {e.Message}");
-    }
+                if (verboseLogs)
+                    Debug.Log($"[UgsInitializer] UGS ready - PlayerId: {AuthenticationService.Instance.PlayerId}");
+            }
+            catch (Exception e)
+            {
+                IsReady = false;
+                Debug.LogError($"[UgsInitializer] Failed to initialize UGS: {e.Message}");
+            }
 #else
             IsReady = false;
             if (verboseLogs)

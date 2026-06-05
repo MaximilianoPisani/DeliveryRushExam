@@ -13,12 +13,18 @@ namespace DeliveryRushExam.Save
 
         private ISaveService saveService;
 
-        private async void Awake()
+        private async void Start()
         {
-            if (!ServiceLocator.TryGet<ISaveService>(out saveService))
+            // Wait until service is registered - handles async installer delay
+            int attempts = 0;
+            while (!ServiceLocator.TryGet<ISaveService>(out saveService))
             {
-                Debug.LogError("[SaveManager] ISaveService not registered. Check SaveServicesInstaller execution order.");
-                return;
+                if (attempts++ > 20)
+                {
+                    Debug.LogError("[SaveManager] ISaveService not registered after waiting. Check SaveServicesInstaller.");
+                    return;
+                }
+                await Task.Delay(100);
             }
 
             try
@@ -27,7 +33,7 @@ namespace DeliveryRushExam.Save
             }
             catch (Exception e)
             {
-                Debug.LogError($"[SaveManager] Failed to load progress on awake: {e.Message}");
+                Debug.LogError($"[SaveManager] Failed to load progress on start: {e.Message}");
             }
         }
 
