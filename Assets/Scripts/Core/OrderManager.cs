@@ -38,10 +38,7 @@ namespace DeliveryRushExam.Core
 
         private void Update()
         {
-            if (!isRunning)
-            {
-                return;
-            }
+            if (!isRunning) return;
 
             spawnTimer += Time.deltaTime;
             if (spawnTimer >= spawnInterval)
@@ -50,22 +47,22 @@ namespace DeliveryRushExam.Core
                 TrySpawnOrder();
             }
 
+            int expiredCount = 0;
             for (int i = activeOrders.Count - 1; i >= 0; i--)
             {
                 activeOrders[i].remainingTime -= Time.deltaTime;
-            }
-            
-            int expiredCount = activeOrders.Where(order => order.remainingTime <= 0f).Count();
-            if (expiredCount > 0)
-            {
-                activeOrders.RemoveAll(order => order.remainingTime <= 0f);
-                OrdersChanged?.Invoke();
+                if (activeOrders[i].remainingTime <= 0f)
+                {
+                    activeOrders.RemoveAt(i);
+                    expiredCount++;
+                }
             }
 
+            if (expiredCount > 0)
+                OrdersChanged?.Invoke();
+
             if (verboseLogs)
-            {
-                Debug.Log("Active orders: " + activeOrders.Count + " expired: " + expiredCount);
-            }
+                Debug.Log($"Active orders: {activeOrders.Count} expired: {expiredCount}");
         }
 
         public void StartOrders()
@@ -86,15 +83,19 @@ namespace DeliveryRushExam.Core
 
         public void CompleteOrder(string orderId)
         {
-            OrderData order = activeOrders.FirstOrDefault(activeOrder => activeOrder.id == orderId);
-            if (order == null)
+            // Linear search but acceptable for small lists (max 6 orders)
+            for (int i = 0; i < activeOrders.Count; i++)
             {
+                if (activeOrders[i].id != orderId) continue;
+
+                OrderData order = activeOrders[i];
+                activeOrders.RemoveAt(i);
+                scoreManager.AddCompletedOrder(order);
+                OrdersChanged?.Invoke();
                 return;
             }
 
-            activeOrders.Remove(order);
-            scoreManager.AddCompletedOrder(order);
-            OrdersChanged?.Invoke();
+            Debug.LogWarning($"[OrderManager] Order {orderId} not found");
         }
 
         private void TrySpawnOrder()

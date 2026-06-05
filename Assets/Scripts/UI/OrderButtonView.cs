@@ -34,15 +34,11 @@ namespace DeliveryRushExam.UI
 
         public void Refresh()
         {
-            if (orderData == null)
-            {
-                return;
-            }
+            if (orderData == null) return;
 
-            // Texto directo para facilitar el seguimiento durante el examen.
-            titleText.text = "Deliver to " + orderData.customerName;
-            rewardText.text = "+" + orderData.rewardPoints + " pts / +" + orderData.rewardCoins + " coins";
-            timerText.text = "Time " + Mathf.CeilToInt(orderData.remainingTime);
+            titleText.text = $"Deliver to {orderData.customerName}";
+            rewardText.text = $"+{orderData.rewardPoints} pts / +{orderData.rewardCoins} coins";
+            timerText.text = $"Time {Mathf.CeilToInt(orderData.remainingTime)}";
         }
 
         private void HandleClick()

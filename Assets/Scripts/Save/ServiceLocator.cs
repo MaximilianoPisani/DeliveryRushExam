@@ -26,7 +26,7 @@ namespace DeliveryRushExam.Save
 
             if (!Services.TryGetValue(type, out object service))
             {
-                throw new InvalidOperationException("Service not registered: " + type.Name);
+                throw new InvalidOperationException($"[ServiceLocator] Service not registered: {type.Name}");
             }
 
             return (TService)service;

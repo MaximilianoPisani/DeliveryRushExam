@@ -296,7 +296,10 @@ PlayerSettings:
   androidSymbolsSizeThreshold: 800
   m_BuildTargetIcons: []
   m_BuildTargetPlatformIcons: []
-  m_BuildTargetBatching: []
+  m_BuildTargetBatching:
+  - m_BuildTarget: Standalone
+    m_StaticBatching: 1
+    m_DynamicBatching: 0
   m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs: []
   m_BuildTargetGraphicsJobMode: []
@@ -583,7 +586,8 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Standalone: DELIVERY_RUSH_UGS
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -682,11 +686,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: 38033271-f50c-4b2b-9698-7789ba2d394c
+  cloudProjectId: 0212cbab-4acc-4cae-8c05-91433b653bb2
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Examen_2
-  organizationId: unity_fh0dwanefspd5g
+  projectName: DeliveryRushExam
+  organizationId: maxipisani
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

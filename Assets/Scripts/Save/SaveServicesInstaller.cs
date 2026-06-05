@@ -14,15 +14,17 @@ namespace DeliveryRushExam.Save
 
         private void Awake()
         {
-            // Registro inicial para que el proyecto funcione.
-            // El punto de extensión esperado es registrar una abstracción común.
-            if (saveMode == SaveMode.Local)
+            if (saveMode == SaveMode.Cloud &&
+                Application.internetReachability != NetworkReachability.NotReachable)
             {
-                ServiceLocator.Register(new LocalSaveService());
+                ServiceLocator.Register<ISaveService>(new UgsCloudSaveService());
+                Debug.Log("[SaveServicesInstaller] Registered UgsCloudSaveService");
                 return;
             }
 
-            ServiceLocator.Register(new UgsCloudSaveService());
+            // Fallback to local if no internet or mode is Local
+            ServiceLocator.Register<ISaveService>(new LocalSaveService());
+            Debug.Log("[SaveServicesInstaller] Registered LocalSaveService");
         }
     }
 }

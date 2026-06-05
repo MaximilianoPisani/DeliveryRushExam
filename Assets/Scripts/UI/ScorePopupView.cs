@@ -10,11 +10,20 @@ namespace DeliveryRushExam.UI
         [SerializeField] private float moveSpeed = 55f;
 
         private float age;
+        private CanvasGroup canvasGroup;
+        private ScorePopupPool pool;
 
-        public void Setup(string message)
+        private void Awake()
+        {
+            // Cache component once instead of every frame
+            canvasGroup = GetComponent<CanvasGroup>();
+        }
+
+        public void Setup(string message, ScorePopupPool ownerPool)
         {
             age = 0f;
             messageText.text = message;
+            pool = ownerPool;
         }
 
         private void Update()
@@ -22,15 +31,14 @@ namespace DeliveryRushExam.UI
             age += Time.deltaTime;
             transform.localPosition += Vector3.up * moveSpeed * Time.deltaTime;
 
-            CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
             if (canvasGroup != null)
-            {
                 canvasGroup.alpha = 1f - age / lifetime;
-            }
 
             if (age >= lifetime)
             {
-                Destroy(gameObject);
+                // Return to pool instead of destroying
+                transform.localPosition = Vector3.zero;
+                pool.Return(this);
             }
         }
     }

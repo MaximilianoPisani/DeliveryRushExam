@@ -33,6 +33,10 @@ namespace DeliveryRushExam.UI
         [SerializeField] private GameObject resultsPanel;
         [SerializeField] private TMP_Text resultsText;
 
+        [Header("Pools")]
+        [SerializeField] private OrderButtonPool orderButtonPool;
+        [SerializeField] private ScorePopupPool scorePopupPool;
+
         private readonly List<OrderButtonView> orderViews = new List<OrderButtonView>();
 
         private void Awake()
@@ -57,43 +61,27 @@ namespace DeliveryRushExam.UI
         {
             orderManager.OrdersChanged += RefreshOrderList;
             scoreManager.OrderScored += ShowScorePopup;
+            scoreManager.ScoreChanged += RefreshScoreHUD;
         }
 
         private void OnDisable()
         {
-            if (orderManager != null)
-            {
-                orderManager.OrdersChanged -= RefreshOrderList;
-            }
-
-            if (scoreManager != null)
-            {
-                scoreManager.OrderScored -= ShowScorePopup;
-            }
+            if (orderManager != null) orderManager.OrdersChanged -= RefreshOrderList;
+            if (scoreManager != null) scoreManager.OrderScored -= ShowScorePopup;
+            if (scoreManager != null) scoreManager.ScoreChanged -= RefreshScoreHUD;
+        }
+        private void RefreshScoreHUD(int score, int coins, int completedOrders)
+        {
+            scoreText.text = $"Score: {score}";
+            coinsText.text = $"Coins: {coins}";
+            ordersCountText.text = $"Orders: {completedOrders}";
         }
 
         private void Update()
         {
-            if (scoreManager == null || gameManager == null)
-            {
-                return;
-            }
+            if (gameManager == null) return;
 
-            scoreText.text = "Score: " + scoreManager.Score;
-            coinsText.text = "Coins: " + scoreManager.Coins;
-            timerText.text = "Time: " + Mathf.CeilToInt(gameManager.RemainingTime);
-            ordersCountText.text = "Orders: " + orderManager.ActiveOrders.Count;
-
-            for (int i = 0; i < orderViews.Count; i++)
-            {
-                orderViews[i].Refresh();
-            }
-
-            Canvas canvas = GetComponentInParent<Canvas>();
-            if (canvas != null && ordersContainer != null)
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(ordersContainer);
-            }
+            timerText.text = $"Time: {Mathf.CeilToInt(gameManager.RemainingTime)}";
         }
 
         public void ShowGameplay()
@@ -108,46 +96,41 @@ namespace DeliveryRushExam.UI
             gameplayPanel.SetActive(false);
             resultsPanel.SetActive(true);
 
-            resultsText.text =
-                "Delivery Rush Results\n" +
-                "Score: " + score + "\n" +
-                "Coins earned: " + coins + "\n" +
-                "Completed orders: " + completedOrders + "\n" +
-                "Best score: " + progressData.bestScore + "\n" +
-                "Total coins: " + progressData.totalCoins;
+            resultsText.text = $"Delivery Rush Results\n" +
+                               $"Score: {score}\n" +
+                               $"Coins earned: {coins}\n" +
+                               $"Completed orders: {completedOrders}\n" +
+                               $"Best score: {progressData.bestScore}\n" +
+                               $"Total coins: {progressData.totalCoins}";
         }
 
         private void RefreshOrderList()
         {
-            OrderManager runtimeOrderManager = FindFirstObjectByType<OrderManager>();
-            if (runtimeOrderManager != null)
-            {
-                orderManager = runtimeOrderManager;
-            }
-
+            // Return all active views to pool
             for (int i = 0; i < orderViews.Count; i++)
-            {
-                Destroy(orderViews[i].gameObject);
-            }
+                orderButtonPool.Return(orderViews[i]);
 
             orderViews.Clear();
 
             IReadOnlyList<OrderData> orders = orderManager.ActiveOrders;
             for (int i = 0; i < orders.Count; i++)
             {
-                OrderButtonView view = Instantiate(orderButtonPrefab, ordersContainer);
-                view.gameObject.SetActive(true);
-                view.Setup(orders[i], orderManager.CompleteOrder);
+                OrderButtonView view = orderButtonPool.Get(orders[i], orderManager.CompleteOrder);
                 orderViews.Add(view);
             }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(ordersContainer);
         }
 
         private void ShowScorePopup(OrderData order)
         {
-            ScorePopupView popup = Instantiate(scorePopupPrefab, popupsContainer);
-            popup.gameObject.SetActive(true);
-            popup.transform.localPosition = new Vector3(Random.Range(-90f, 90f), Random.Range(-25f, 35f), 0f);
-            popup.Setup("+" + order.rewardPoints + " points");
+            ScorePopupView popup = scorePopupPool.Get();
+            popup.transform.localPosition = new Vector3(
+                Random.Range(-90f, 90f),
+                Random.Range(-25f, 35f),
+                0f);
+            popup.Setup($"+{order.rewardPoints} points", scorePopupPool);
         }
+
     }
 }

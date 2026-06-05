@@ -62,22 +62,15 @@ namespace DeliveryRushExam.Core
 
         private void Update()
         {
-            if (!isPlaying)
-            {
-                return;
-            }
+            if (!isPlaying) return;
 
             remainingTime -= Time.deltaTime;
 
             if (verboseLogs)
-            {
-                Debug.Log("Match time: " + remainingTime);
-            }
+                Debug.Log($"Match time: {remainingTime}");
 
             if (remainingTime <= 0f)
-            {
                 _ = FinishMatchAsync();
-            }
         }
 
         public void StartMatch()

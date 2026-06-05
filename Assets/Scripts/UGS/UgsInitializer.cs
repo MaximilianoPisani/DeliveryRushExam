@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using UnityEngine;
+using System;
 
 #if DELIVERY_RUSH_UGS
 using Unity.Services.Authentication;
@@ -18,36 +19,34 @@ namespace DeliveryRushExam.UGS
         private async void Start()
         {
             if (initializeOnStart)
-            {
                 await InitializeAsync();
-            }
         }
 
         public async Task InitializeAsync()
         {
 #if DELIVERY_RUSH_UGS
-            if (UnityServices.State == ServicesInitializationState.Uninitialized)
-            {
-                await UnityServices.InitializeAsync();
-            }
+    try
+    {
+        if (UnityServices.State == ServicesInitializationState.Uninitialized)
+            await UnityServices.InitializeAsync();
 
-            if (!AuthenticationService.Instance.IsSignedIn)
-            {
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            }
+        if (!AuthenticationService.Instance.IsSignedIn)
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-            IsReady = true;
+        IsReady = true;
 
-            if (verboseLogs)
-            {
-                Debug.Log("UGS ready. PlayerId: " + AuthenticationService.Instance.PlayerId);
-            }
+        if (verboseLogs)
+            Debug.Log($"[UgsInitializer] UGS ready - PlayerId: {AuthenticationService.Instance.PlayerId}");
+    }
+    catch (Exception e)
+    {
+        IsReady = false;
+        Debug.LogError($"[UgsInitializer] Failed to initialize UGS: {e.Message}");
+    }
 #else
             IsReady = false;
             if (verboseLogs)
-            {
-                Debug.Log("UGS initializer present. Install UGS packages and define DELIVERY_RUSH_UGS to enable it.");
-            }
+                Debug.Log("[UgsInitializer] DELIVERY_RUSH_UGS not defined - UGS disabled");
 
             await Task.Yield();
 #endif

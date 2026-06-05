@@ -30,9 +30,7 @@ namespace DeliveryRushExam.Core
             CompletedOrders++;
 
             if (verboseLogs)
-            {
-                Debug.Log("Completed order " + order.customerName + " score " + Score + " coins " + Coins);
-            }
+                Debug.Log($"[ScoreManager] Order completed - customer: {order.customerName} | score: {Score} | coins: {Coins}");
 
             OrderScored?.Invoke(order);
             ScoreChanged?.Invoke(Score, Coins, CompletedOrders);
